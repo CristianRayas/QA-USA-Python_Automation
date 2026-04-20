@@ -6,8 +6,7 @@ class TestUrbanRoutes:
 
     @classmethod
     def setup_class(cls):
-        data.URBAN_ROUTES_URL = "https://cnt-50594baa-8c03-4582-89a3-64c714cbbb31.containerhub.tripleten-services.com"
-
+        # Just check the URL, don't define it here
         if helpers.is_url_reachable(data.URBAN_ROUTES_URL):
             print("Connected to the Urban Routes server")
         else:
@@ -55,4 +54,3 @@ class TestUrbanRoutes:
     def test_car_search_model_appears(self):
         # Add in S8
         print("function created for car search model appears")
-        pass
