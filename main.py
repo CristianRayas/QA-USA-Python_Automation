@@ -1,56 +1,120 @@
+from selenium import webdriver
+
 import data
 import helpers
+from pages import UrbanRoutesPage
 
 
 class TestUrbanRoutes:
 
     @classmethod
     def setup_class(cls):
-        # Just check the URL, don't define it here
+        from selenium.webdriver.chrome.options import Options
+
+        chrome_options = Options()
+        chrome_options.set_capability("goog:loggingPrefs", {"performance": "ALL"})
+
         if helpers.is_url_reachable(data.URBAN_ROUTES_URL):
             print("Connected to the Urban Routes server")
+            cls.driver = webdriver.Chrome(options=chrome_options)
+            cls.driver.implicitly_wait(5)
         else:
-            print("Cannot connect to Urban Routes. Check the server is on and still running")
+            raise Exception("Cannot connect to Urban Routes server")
 
     def test_set_route(self):
-        # Add in S8
-        print("function created for set route")
-        pass
+        self.driver.get(data.URBAN_ROUTES_URL)
+        page = UrbanRoutesPage(self.driver)
+
+        page.set_route(data.ADDRESS_FROM, data.ADDRESS_TO)
+
+        assert page.get_from_value() == data.ADDRESS_FROM
+        assert page.get_to_value() == data.ADDRESS_TO
 
     def test_select_plan(self):
-        # Add in S8
-        print("function created for select plan")
-        pass
+        self.driver.get(data.URBAN_ROUTES_URL)
+        page = UrbanRoutesPage(self.driver)
+
+        page.set_route(data.ADDRESS_FROM, data.ADDRESS_TO)
+        page.click_call_taxi_button()
+        page.select_supportive_plan()
+
+        assert "active" in page.get_supportive_plan_class()
 
     def test_fill_phone_number(self):
-        # Add in S8
-        print("function created for fill phone number")
-        pass
+        self.driver.get(data.URBAN_ROUTES_URL)
+        page = UrbanRoutesPage(self.driver)
+
+        page.set_route(data.ADDRESS_FROM, data.ADDRESS_TO)
+        page.click_call_taxi_button()
+        page.select_supportive_plan()
+        page.fill_phone_number(data.PHONE_NUMBER)
+
+        code = helpers.retrieve_phone_code(self.driver)
+        page.fill_phone_code(code)
+
+        assert data.PHONE_NUMBER in page.get_phone_number()
 
     def test_fill_card(self):
-        # Add in S8
-        print("function created for fill card")
-        pass
+        self.driver.get(data.URBAN_ROUTES_URL)
+        page = UrbanRoutesPage(self.driver)
+
+        page.set_route(data.ADDRESS_FROM, data.ADDRESS_TO)
+        page.click_call_taxi_button()
+        page.select_supportive_plan()
+        page.add_card(data.CARD_NUMBER, data.CARD_CODE)
+
+        assert "Card" in page.get_payment_method()
 
     def test_comment_for_driver(self):
-        # Add in S8
-        print("function created for comment for driver")
-        pass
+        self.driver.get(data.URBAN_ROUTES_URL)
+        page = UrbanRoutesPage(self.driver)
+
+        page.set_route(data.ADDRESS_FROM, data.ADDRESS_TO)
+        page.click_call_taxi_button()
+        page.select_supportive_plan()
+        page.write_comment_for_driver(data.MESSAGE_FOR_DRIVER)
+
+        assert page.get_driver_comment() == data.MESSAGE_FOR_DRIVER
 
     def test_order_blanket_and_handkerchiefs(self):
-        # Add in S8
-        print("function created for blanket and handkerchiefs")
-        pass
+        self.driver.get(data.URBAN_ROUTES_URL)
+        page = UrbanRoutesPage(self.driver)
+
+        page.set_route(data.ADDRESS_FROM, data.ADDRESS_TO)
+        page.click_call_taxi_button()
+        page.select_supportive_plan()
+        page.order_blanket_and_handkerchiefs()
+
+        assert page.is_blanket_and_handkerchiefs_selected()
 
     def test_order_2_ice_creams(self):
-        number_of_ice_creams = 2
+        self.driver.get(data.URBAN_ROUTES_URL)
+        page = UrbanRoutesPage(self.driver)
 
-        for i in range(number_of_ice_creams):
-            # Add in S8
-            print("function created for 2 ice creams")
-            pass
+        page.set_route(data.ADDRESS_FROM, data.ADDRESS_TO)
+        page.click_call_taxi_button()
+        page.select_supportive_plan()
+        page.order_ice_creams(2)
+
+        assert page.get_ice_cream_count() == "2"
 
     def test_car_search_model_appears(self):
-        # Add in S8
-        print("function created for car search model appears")
-        pass
+        self.driver.get(data.URBAN_ROUTES_URL)
+        page = UrbanRoutesPage(self.driver)
+
+        page.set_route(data.ADDRESS_FROM, data.ADDRESS_TO)
+        page.click_call_taxi_button()
+        page.select_supportive_plan()
+
+        page.fill_phone_number(data.PHONE_NUMBER)
+        code = helpers.retrieve_phone_code(self.driver)
+        page.fill_phone_code(code)
+
+        page.write_comment_for_driver(data.MESSAGE_FOR_DRIVER)
+        page.click_order_button()
+
+        assert page.is_car_search_modal_displayed()
+
+    @classmethod
+    def teardown_class(cls):
+        cls.driver.quit()
